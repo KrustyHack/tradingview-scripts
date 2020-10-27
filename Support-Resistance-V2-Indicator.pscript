@@ -1,0 +1,87 @@
+// This source code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
+//@version=4
+study("Support/Resistance", shorttitle="S/R", overlay=true, scale = scale.right, linktoseries = true)
+
+line_width = input(4, type = input.integer, title="SR Level line Width")
+level_min_lengh = input(4, type = input.integer, title="Set minimum number of bars from level start to qualify a level")
+y  = input("Orange", "Line Color", options=["Red", "Lime", "Orange", "Teal", "Yellow", "White", "Black"])
+line_extend = input(false, type = input.bool, title = "Extend Level line Right") ? extend.right : extend.none
+sr_tf = input("", type = input.resolution, title="SR Timeframe (Beta)")
+
+//color function
+colour(z) => z=="Red"?color.red:z=="Lime"?color.lime:z=="Orange"?color.orange:z=="Teal"?
+ color.teal:z=="Yellow"?color.yellow:z=="Black"?color.black:color.white
+ 
+//Legacy RSI calc
+rsi_src = close, len = 9
+up1 = rma(max(change(rsi_src), 0), len)
+down1 = rma(-min(change(rsi_src), 0), len)
+legacy_rsi = down1 == 0 ? 100 : up1 == 0 ? 0 : 100 - (100 / (1 + up1 / down1))
+
+//CMO based on HMA
+length = 1
+src1 = hma(open, 5)[1] // legacy hma(5) calculation gives a resul with one candel shift, thus use hma()[1]
+src2 = hma(close, 12)
+momm1 = change(src1)
+momm2 = change(src2)
+f1(m, n) => m >= n ? m : 0.0
+f2(m, n) => m >= n ? 0.0 : -m
+m1 = f1(momm1, momm2)
+m2 = f2(momm1, momm2)
+sm1 = sum(m1, length)
+sm2 = sum(m2, length)
+percent(nom, div) => 100 * nom / div
+cmo_new = percent(sm1-sm2, sm1+sm2)
+
+//Legacy Close Pivots calcs.
+len5 = 2
+h = highest(len5)
+h1 = dev(h, len5) ? na : h
+hpivot = fixnan(h1)
+l = lowest(len5)
+l1 = dev(l, len5) ? na : l
+lpivot = fixnan(l1)
+
+//Calc Values
+
+rsi_new = rsi(close,9)
+lpivot_new =  lpivot  // use legacy pivots calculation as integrated pivotlow/pivothigh functions give very different result
+hpivot_new =  hpivot
+
+sup = rsi_new < 25 and cmo_new > 50  and lpivot_new
+res = rsi_new > 75 and cmo_new < -50  and hpivot_new
+calcXup() =>
+    var xup = 0.0
+    xup :=  sup ? low : xup[1]
+calcXdown() =>
+    var xdown = 0.0
+    xdown := res ? high : xdown[1]
+
+//Lines drawing variables
+tf1 = security(syminfo.tickerid, sr_tf, calcXup(), lookahead=barmerge.lookahead_on)
+tf2  = security(syminfo.tickerid, sr_tf, calcXdown(), lookahead=barmerge.lookahead_on)
+
+//SR Line plotting
+var tf1_line = line.new(0, 0, 0, 0)
+var tf1_bi_start = 0
+var tf1_bi_end = 0
+tf1_bi_start := change(tf1) ? bar_index : tf1_bi_start[1]
+tf1_bi_end := change(tf1) ? tf1_bi_start : bar_index
+if change(tf1)
+    if (line.get_x2(tf1_line) - line.get_x1(tf1_line)) < level_min_lengh
+        line.delete(tf1_line)
+    tf1_line := line.new(tf1_bi_start, tf1, tf1_bi_end, tf1, color = colour(y), width = line_width, extend = line_extend)
+line.set_x2(tf1_line, tf1_bi_end)
+
+var tf2_line = line.new(0, 0, 0, 0)
+var tf2_bi_start = 0
+var tf2_bi_end = 0
+tf2_bi_start := change(tf2) ? bar_index : tf2_bi_start[1]
+tf2_bi_end := change(tf2) ? tf2_bi_start : bar_index
+if change(tf2)
+    if (line.get_x2(tf2_line) - line.get_x1(tf2_line)) < level_min_lengh
+        line.delete(tf2_line)
+    tf2_line := line.new(tf2_bi_start, tf2, tf2_bi_end, tf2, color =  colour(y), width = line_width, extend = line_extend)
+line.set_x2(tf2_line, tf2_bi_end)
+
+alertcondition(change(tf1) != 0 or change(tf2) != 0 , message = "New S/R line" )
