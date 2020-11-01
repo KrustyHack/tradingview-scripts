@@ -1,5 +1,9 @@
 # tradingview-scripts
 
+## https://www.tradingview.com/u/KrustyHack/
+
+* Candle Recon Ultimate
+
 ## https://fr.tradingview.com/u/LonesomeTheBlue
 
 * https://fr.tradingview.com/script/va09eWAp-Support-Resistance-Dynamic-v2/
