@@ -2,7 +2,7 @@
 
 ## https://www.tradingview.com/u/KrustyHack/
 
-* Candle Recon Ultimate
+* [WIP] Candle Recon Ultimate
 
 ## https://fr.tradingview.com/u/LonesomeTheBlue
 
