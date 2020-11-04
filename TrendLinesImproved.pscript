@@ -26,16 +26,17 @@ L1 = LN(1, #ff0088), line.delete(L1[1])
 L2 = LN(0, #00ff88), line.delete(L2[1])
 //
 // Input variables
-len=input(30,title="loockback length pivots")
+len=input(10,title="loockback length pivots")
 wicks=input(true,title="Draw lines from wicks (checked) or real bodies (unchecked)?")
 disp_select=input(true,title="Display only falling 'high' and rising 'low' trendlines?")
 do_mono=input(false,title="checked = monochrome lines, unchecked = direction colored lines?")
-limit_extension=input(0,title="Limit extensions of the lines? 0 = infinite, other values x 100 bars",minval=0)
+limit_extension=input(1,title="Limit extensions of the lines? 0 = infinite, other values x 100 bars",minval=0)
 do_alerts=input(true,title="show trendline breaks")
-trendline_nr=input(5,title="number of past trendlines to check for breaks (max = 10)",minval=0,maxval=10)
+trendline_nr=input(10,title="number of past trendlines to check for breaks (max = 10)",minval=0,maxval=10)
 select_breaks=input(true,title="only display 'long' breaks on trendlines connecting 'highs' and 'short' for 'lows'")
 log_chart=input(false,title="USING A LOG CHART? MAKE SURE TO CHECK THIS BOX!!")
 plot_pivots = input(false, title="Plot pivots ?", type=input.bool)
+draw_broken = input(false, title="Draw broken trendlines ?", type=input.bool)
 
 
 // Calculating the 'time value' of one bar
@@ -77,7 +78,7 @@ f_trendline(_input_function,_delay,_only_up,_extend) =>
         _xtend:=false
     if change(Ay)!=0
         line_color = slope*time<0?(_only_up?(disp_select?na:color_rising):color_rising):(_only_up?color_falling:(disp_select?na:color_falling))
-        if not na(line_color)
+        if not na(line_color) and draw_broken
             trendline := line.new(Bx,By,Axbis, Aybis, xloc.bar_time, extend=_xtend?extend.right:extend.none, color=line_color, style=line.style_dotted, width=1)
 
     [Bx,By,Axbis,Aybis,slope]
