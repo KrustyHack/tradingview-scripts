@@ -2,11 +2,11 @@
 //scripts taken from https://www.tradingview.com/script/mpeEgn5J-Trendlines-JD/
 //https://www.tradingview.com/script/X6MMLa9E-Fibonacci-Pivot-Points-Alerts/
 //https://www.tradingview.com/script/yrmJJmyI-Trend-Lines/
-// Improved by KrustyHack
-
 study("Trend Lines+++ Improved", overlay=true)
-
+//
 src = input(close)
+
+//
 
 mx = input(100, "Range", minval=1)
 mn = max(2, round(mx / 10) + 1)
