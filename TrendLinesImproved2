@@ -1,0 +1,367 @@
+//@version=4
+//scripts taken from https://www.tradingview.com/script/mpeEgn5J-Trendlines-JD/
+//https://www.tradingview.com/script/X6MMLa9E-Fibonacci-Pivot-Points-Alerts/
+//https://www.tradingview.com/script/yrmJJmyI-Trend-Lines/
+study("Trend Lines+++ Improved", overlay=true)
+//
+src = input(close)
+
+//
+
+mx = input(100, "Range", minval=1)
+mn = max(2, round(mx / 10) + 1)
+
+LN(B, CLR) =>
+    s1 = B == 1 ? highest(src, mx) : lowest(src, mx)
+    s2 = B == 1 ? highest(src, mn) : lowest(src, mn)
+    c1 = s1 == src
+    c2 = s2 == src
+    b1 = barssince(c1)
+    b2 = barssince(c2)
+    v1 = valuewhen(c1, s1, 0)
+    v2 = valuewhen(c2, s2, 0)
+    line.new(bar_index - b1, v1, bar_index - b2, v2, extend=extend.both, color=CLR, width=2)
+
+L1 = LN(1, #ff0088), line.delete(L1[1])
+L2 = LN(0, #00ff88), line.delete(L2[1])
+//
+// Input variables
+len=input(10,title="loockback length pivots")
+wicks=input(true,title="Draw lines from wicks (checked) or real bodies (unchecked)?")
+disp_select=input(true,title="Display only falling 'high' and rising 'low' trendlines?")
+do_mono=input(false,title="checked = monochrome lines, unchecked = direction colored lines?")
+limit_extension=input(1,title="Limit extensions of the lines? 0 = infinite, other values x 100 bars",minval=0)
+do_alerts=input(true,title="show trendline breaks")
+trendline_nr=input(10,title="number of past trendlines to check for breaks (max = 10)",minval=0,maxval=10)
+select_breaks=input(true,title="only display 'long' breaks on trendlines connecting 'highs' and 'short' for 'lows'")
+log_chart=input(false,title="USING A LOG CHART? MAKE SURE TO CHECK THIS BOX!!")
+plot_pivots = input(false, title="Plot pivots ?", type=input.bool)
+
+
+// Calculating the 'time value' of one bar
+bar_time=time-time[1]
+
+// Initialising color scheme
+var color color_rising=do_mono?color.teal:color.lime
+var color color_falling=do_mono?color.teal:color.fuchsia
+
+
+/////// Function declarations ///////
+
+// Declaration of trendline function
+f_trendline(_input_function,_delay,_only_up,_extend) =>
+    // Calculate line coordinates (Ax,Ay) - (Bx,By)
+    var int Ax = 0
+    var int Bx = 0
+    var float By = 0.0
+    var float slope = 0.0
+    Ay = fixnan(_input_function)
+    if change(Ay)!=0
+        Ax := time[_delay]
+        By:= Ay[1]
+        Bx := Ax[1]
+        slope:=log_chart?((log(Ay)-log(By))/(Ax-Bx)):((Ay-By)/(Ax-Bx))
+    else
+        Ax := Ax[1]
+        Bx := Bx[1]
+        By := By[1]
+    // Draw trendlines
+    var line trendline=na
+    var int Axbis=0
+    var float Aybis=0.0
+    var bool _xtend=true
+    extension_time = limit_extension*bar_time*100
+    Axbis := Ax + extension_time
+    Aybis := log_chart?(Ay*exp(extension_time*slope)):(Ay + extension_time*slope)
+    if limit_extension!=0
+        _xtend:=false
+    if change(Ay)!=0
+        line_color = slope*time<0?(_only_up?(disp_select?na:color_rising):color_rising):(_only_up?color_falling:(disp_select?na:color_falling))
+        if not na(line_color)
+            trendline := line.new(Bx,By,Axbis, Aybis, xloc.bar_time, extend=_xtend?extend.right:extend.none, color=line_color, style=line.style_dotted, width=1)
+
+    [Bx,By,Axbis,Aybis,slope]
+
+// Function to get trendline price for X bars ago ("0" = current value)
+line_get_price(_start_time,_start_price,_slope,_lookback_period,_log_chart) =>
+    var float current_price=0.0
+    elapsed_time = (time-_start_time)
+    current_price := _log_chart?(_start_price*exp((elapsed_time-(_lookback_period*bar_time))*_slope)):(_start_price + (elapsed_time-(_lookback_period*bar_time))*_slope)
+
+// Function to check for trendline crosses
+line_cross(_check_value,_start_time,_start_price,_slope,_log_chart) =>
+    var float current_value=0.0
+    var float previous_value=0.0
+    // Get current and previous price for the trendline
+    current_value := line_get_price(_start_time,_start_price,_slope,0,_log_chart)
+    previous_value := line_get_price(_start_time,_start_price,_slope,1,_log_chart)
+    // Return 1 for crossover, -1 for crossunder and 0 for no cross detected
+    cross =
+     _check_value[1]<previous_value and _check_value>current_value?1:
+     _check_value[1]>previous_value and _check_value<current_value?-1:0
+
+
+/////// Start of main script ///////
+
+// Calculate pivot points    
+high_point=pivothigh(wicks?high:(close>open?close:open),len,len/2)
+low_point=pivotlow(wicks?low:(close>open?open:close),len,len/2)
+
+// Call trendline function for high and low pivot points
+[phx1,phy1,phx2,phy2,slope_high]=f_trendline(high_point,len/2,false,true)
+[plx1,ply1,plx2,ply2,slope_low]=f_trendline(low_point,len/2,true,true)
+
+// Initialition of pseudo array to keep track of last 10 high and 10 low trendline values
+var int high_x0=0, var float high_y0=0.0, var float high_sl0=0.0
+var int high_x1=0, var float high_y1=0.0, var float high_sl1=0.0 
+var int high_x2=0, var float high_y2=0.0, var float high_sl2=0.0 
+var int high_x3=0, var float high_y3=0.0, var float high_sl3=0.0 
+var int high_x4=0, var float high_y4=0.0, var float high_sl4=0.0
+var int high_x5=0, var float high_y5=0.0, var float high_sl5=0.0
+var int high_x6=0, var float high_y6=0.0, var float high_sl6=0.0
+var int high_x7=0, var float high_y7=0.0, var float high_sl7=0.0
+var int high_x8=0, var float high_y8=0.0, var float high_sl8=0.0
+var int high_x9=0, var float high_y9=0.0, var float high_sl9=0.0
+
+var int low_x0=0,  var float low_y0=0.0,  var float low_sl0=0.0
+var int low_x1=0,  var float low_y1=0.0,  var float low_sl1=0.0 
+var int low_x2=0,  var float low_y2=0.0,  var float low_sl2=0.0 
+var int low_x3=0,  var float low_y3=0.0,  var float low_sl3=0.0 
+var int low_x4=0,  var float low_y4=0.0,  var float low_sl4=0.0
+var int low_x5=0,  var float low_y5=0.0,  var float low_sl5=0.0
+var int low_x6=0,  var float low_y6=0.0,  var float low_sl6=0.0
+var int low_x7=0,  var float low_y7=0.0,  var float low_sl7=0.0
+var int low_x8=0,  var float low_y8=0.0,  var float low_sl8=0.0
+var int low_x9=0,  var float low_y9=0.0,  var float low_sl9=0.0
+
+// If a new trendline is formed, shift all values in the array one place up and forget the last values
+if change(fixnan(high_point))!=0
+    high_x9:=high_x8, high_y9:=high_y8, high_sl9:=high_sl8
+    high_x8:=high_x7, high_y8:=high_y7, high_sl8:=high_sl7
+    high_x7:=high_x6, high_y7:=high_y6, high_sl7:=high_sl6
+    high_x6:=high_x5, high_y6:=high_y5, high_sl6:=high_sl5
+    high_x5:=high_x4, high_y5:=high_y4, high_sl5:=high_sl4
+    high_x4:=high_x3, high_y4:=high_y3, high_sl4:=high_sl3
+    high_x3:=high_x2, high_y3:=high_y2, high_sl3:=high_sl2
+    high_x2:=high_x1, high_y2:=high_y1, high_sl2:=high_sl1
+    high_x1:=high_x0, high_y1:=high_y0, high_sl1:=high_sl0
+    high_x0:=phx1, high_y0:=phy1, high_sl0:=slope_high
+if change(fixnan(low_point))!=0
+    low_x9:=low_x8, low_y9:=low_y8, low_sl9:=low_sl8
+    low_x8:=low_x7, low_y8:=low_y7, low_sl8:=low_sl7
+    low_x7:=low_x6, low_y7:=low_y6, low_sl7:=low_sl6
+    low_x6:=low_x5, low_y6:=low_y5, low_sl6:=low_sl5
+    low_x5:=low_x4, low_y5:=low_y4, low_sl5:=low_sl4
+    low_x4:=low_x3, low_y4:=low_y3, low_sl4:=low_sl3
+    low_x3:=low_x2, low_y3:=low_y2, low_sl3:=low_sl2
+    low_x2:=low_x1, low_y2:=low_y1, low_sl2:=low_sl1
+    low_x1:=low_x0, low_y1:=low_y0, low_sl1:=low_sl0
+    low_x0:=plx1, low_y0:=ply1, low_sl0:=slope_low
+    
+// Check Trendline crosses for last X nr. of trendlines
+cross_high0=
+ disp_select and high_sl0*time>0?0:
+  line_cross(close,high_x0,high_y0,high_sl0,log_chart)
+cross_low0=
+ disp_select and low_sl0*time<0?0:
+  line_cross(close,low_x0,low_y0,low_sl0,log_chart)
+
+cross_high1=
+ disp_select and high_sl1*time>0?0:
+  line_cross(close,high_x1,high_y1,high_sl1,log_chart)
+cross_low1=
+ disp_select and low_sl1*time<0?0:
+  line_cross(close,low_x1,low_y1,low_sl1,log_chart)
+
+cross_high2=
+ disp_select and high_sl2*time>0?0:
+  line_cross(close,high_x2,high_y2,high_sl2,log_chart)
+cross_low2=
+ disp_select and low_sl2*time<0?0:
+  line_cross(close,low_x2,low_y2,low_sl2,log_chart)
+
+cross_high3=
+ disp_select and high_sl3*time>0?0:
+  line_cross(close,high_x3,high_y3,high_sl3,log_chart)
+cross_low3=
+ disp_select and low_sl3*time<0?0:
+  line_cross(close,low_x3,low_y3,low_sl3,log_chart)
+
+cross_high4=
+ disp_select and high_sl4*time>0?0:
+  line_cross(close,high_x4,high_y4,high_sl4,log_chart)
+cross_low4=
+ disp_select and low_sl4*time<0?0:
+  line_cross(close,low_x4,low_y4,low_sl4,log_chart)
+
+cross_high5=
+ disp_select and high_sl5*time>0?0:
+  line_cross(close,high_x5,high_y5,high_sl5,log_chart)
+cross_low5=
+ disp_select and low_sl5*time<0?0:
+  line_cross(close,low_x5,low_y5,low_sl5,log_chart)
+
+cross_high6=
+ disp_select and high_sl6*time>0?0:
+  line_cross(close,high_x6,high_y6,high_sl6,log_chart)
+cross_low6=
+ disp_select and low_sl6*time<0?0:
+  line_cross(close,low_x6,low_y6,low_sl6,log_chart)
+
+cross_high7=
+ disp_select and high_sl7*time>0?0:
+  line_cross(close,high_x7,high_y7,high_sl7,log_chart)
+cross_low7=
+ disp_select and low_sl7*time<0?0:
+  line_cross(close,low_x7,low_y7,low_sl7,log_chart)
+
+cross_high8=
+ disp_select and high_sl8*time>0?0:
+  line_cross(close,high_x8,high_y8,high_sl8,log_chart)
+cross_low8=
+ disp_select and low_sl8*time<0?0:
+  line_cross(close,low_x8,low_y8,low_sl8,log_chart)
+
+cross_high9=
+ disp_select and high_sl9*time>0?0:
+  line_cross(close,high_x9,high_y9,high_sl9,log_chart)
+cross_low9=
+ disp_select and low_sl9*time<0?0:
+  line_cross(close,low_x9,low_y9,low_sl9,log_chart)
+  
+long_break=
+ (trendline_nr>9?cross_high9==1 or (select_breaks?false:cross_low9==1):false) or
+ (trendline_nr>8?cross_high8==1 or (select_breaks?false:cross_low8==1):false) or
+ (trendline_nr>7?cross_high7==1 or (select_breaks?false:cross_low7==1):false) or
+ (trendline_nr>6?cross_high6==1 or (select_breaks?false:cross_low6==1):false) or
+ (trendline_nr>5?cross_high5==1 or (select_breaks?false:cross_low5==1):false) or
+ (trendline_nr>4?cross_high4==1 or (select_breaks?false:cross_low4==1):false) or
+ (trendline_nr>3?cross_high3==1 or (select_breaks?false:cross_low3==1):false) or
+ (trendline_nr>2?cross_high2==1 or (select_breaks?false:cross_low2==1):false) or
+ (trendline_nr>1?cross_high1==1 or (select_breaks?false:cross_low1==1):false) or
+ cross_high0==1 or (select_breaks?false:cross_low0==1)
+
+short_break=
+ (trendline_nr>9?(select_breaks?false:cross_high9==-1) or cross_low9==-1:false) or
+ (trendline_nr>8?(select_breaks?false:cross_high8==-1) or cross_low8==-1:false) or
+ (trendline_nr>7?(select_breaks?false:cross_high7==-1) or cross_low7==-1:false) or
+ (trendline_nr>6?(select_breaks?false:cross_high6==-1) or cross_low6==-1:false) or
+ (trendline_nr>5?(select_breaks?false:cross_high5==-1) or cross_low5==-1:false) or
+ (trendline_nr>4?(select_breaks?false:cross_high4==-1) or cross_low4==-1:false) or
+ (trendline_nr>3?(select_breaks?false:cross_high3==-1) or cross_low3==-1:false) or
+ (trendline_nr>2?(select_breaks?false:cross_high2==-1) or cross_low2==-1:false) or
+ (trendline_nr>1?(select_breaks?false:cross_high1==-1) or cross_low1==-1:false) or
+ (select_breaks?false:cross_high0==-1) or cross_low0==-1
+
+// Plot and connect pivot points
+color_high=slope_high*time<0?color_rising:(disp_select?na:color_falling)
+color_low=slope_low*time>0?color_falling:(disp_select?na:color_rising)
+plot(high_point,color=color_high,offset=-len/2)
+plot(low_point,color=color_low,offset=-len/2)
+//
+// Function outputs 1 when it's the first bar of the D/W/M/Y
+is_newbar(res) =>
+    ch = 0
+    if(res == 'Y')
+        t  = year(time('D'))
+        ch := change(t) != 0 ? 1 : 0
+    else
+        t = time(res)
+        ch := change(t) != 0 ? 1 : 0
+    ch
+
+////////////
+// INPUTS //
+////////////
+
+pp_period = input(title = "Period", type=input.string, defval="Day", options = ['Day', 'Week', 'Month', 'Year'])
+
+pp_res = pp_period == 'Day' ? 'D' : pp_period == 'Week' ? 'W' : pp_period == 'Month' ? 'M' : 'Y' 
+
+/////////////////////
+// Get HLC from HT //
+
+// Calc High
+high_cur = 0.0
+high_cur := is_newbar(pp_res) ? high : max(high_cur[1], high)
+
+phigh = 0.0
+phigh := is_newbar(pp_res) ? high_cur[1] : phigh[1]
+
+// Calc Low
+low_cur = 0.0
+low_cur := is_newbar(pp_res) ? low : min(low_cur[1], low)
+
+plow = 0.0
+plow := is_newbar(pp_res) ? low_cur[1] : plow[1]
+
+// Calc Close
+pclose = 0.0
+pclose := is_newbar(pp_res) ? close[1] : pclose[1]
+
+////////////////////////////////
+// CALCULATE fibonacci pivots //
+
+vPP = (phigh + plow + pclose) / 3
+vR1 = vPP + (phigh - plow) * 0.382
+vS1 = vPP - (phigh - plow) * 0.382
+vR2 = vPP + (phigh - plow) * 0.618
+vS2 = vPP - (phigh - plow) * 0.618
+vR3 = vPP + (phigh - plow) * 1.000
+vS3 = vPP - (phigh - plow) * 1.000
+  
+//////////////
+// PLOTTING //
+
+bars_sinse = 0
+bars_sinse := is_newbar(pp_res) ? 0 : bars_sinse[1] + 1
+
+////////////////////////
+// PLOT PIVOTS LEVELS //
+var line vpp_p = na
+var line vs1_p = na
+var line vs2_p = na
+var line vs3_p = na
+var line vr1_p = na
+var line vr2_p = na
+var line vr3_p = na
+
+if plot_pivots
+    vpp_p := line.new(bar_index[bars_sinse], vPP, bar_index, vPP, color=#f57f17, style =  line.style_solid, extend = extend.right)
+    vs1_p := line.new(bar_index[bars_sinse], vS1, bar_index, vS1, color=#f57f17, style =  line.style_solid, extend = extend.right)
+    vs2_p := line.new(bar_index[bars_sinse], vS2, bar_index, vS2, color=#f57f17, style =  line.style_solid, extend = extend.right)
+    vs3_p := line.new(bar_index[bars_sinse], vS3, bar_index, vS3, color=#f57f17, style =  line.style_solid, extend = extend.right)
+    vr1_p := line.new(bar_index[bars_sinse], vR1, bar_index, vR1, color=#f57f17, style =  line.style_solid, extend = extend.right)
+    vr2_p := line.new(bar_index[bars_sinse], vR2, bar_index, vR2, color=#f57f17, style =  line.style_solid, extend = extend.right)
+    vr3_p := line.new(bar_index[bars_sinse], vR3, bar_index, vR3, color=#f57f17, style =  line.style_solid, extend = extend.right)
+
+// delete previous lines in the same period
+if (not is_newbar(pp_res))
+    line.delete(vpp_p[1])
+    line.delete(vs1_p[1]) 
+    line.delete(vs2_p[1])  
+    line.delete(vs3_p[1])  
+    line.delete(vr1_p[1]) 
+    line.delete(vr2_p[1])  
+    line.delete(vr3_p[1]) 
+  
+// delete extend for the old lines
+if (is_newbar(pp_res))
+    line.set_extend(vpp_p[1], extend.none)
+    line.set_extend(vs1_p[1], extend.none) 
+    line.set_extend(vs2_p[1], extend.none)  
+    line.set_extend(vs3_p[1], extend.none)  
+    line.set_extend(vr1_p[1], extend.none) 
+    line.set_extend(vr2_p[1], extend.none)  
+    line.set_extend(vr3_p[1], extend.none) 
+
+// Add labels
+if (is_newbar(pp_res) and plot_pivots)  
+    label_vpp = label.new(bar_index, vPP, text="P",  style= label.style_none)
+    label_vs1 = label.new(bar_index, vS1, text="S1", style= label.style_none)
+    label_vs2 = label.new(bar_index, vS2, text="S2", style= label.style_none)
+    label_vs3 = label.new(bar_index, vS3, text="S3", style= label.style_none)
+    label_vr1 = label.new(bar_index, vR1, text="R1", style= label.style_none)
+    label_vr2 = label.new(bar_index, vR2, text="R2", style= label.style_none)
+    label_vr3 = label.new(bar_index, vR3, text="R3", style= label.style_none)
+    
