@@ -90,57 +90,83 @@ stochrsi_RSIComingUp = crossover(stochrsi_k, stochrsi_d) and stochrsi_k <= 30
 stochrsi_RSIBottom = stochrsi_k < 30
 // END Stochastic RSI
 
+// START Ichimoku
+tenkanSenPeriods = 9
+kijunSenPeriods = 26
+chikouSpanPeriods = 52
+displacement = 26
+donchian(len) => avg(lowest(len), highest(len))
+tenkanSen = donchian(tenkanSenPeriods)
+kijunSen = donchian(kijunSenPeriods)
+senkouSpanA = avg(tenkanSen, kijunSen)
+senkouSpanB = donchian(chikouSpanPeriods)
+
+ichimokuUpTrend = (senkouSpanA > senkouSpanB) and (close > close[26])
+ichimokuDownTrend = (senkouSpanA < senkouSpanB) and (close < close[26])
+
+plot(tenkanSen, color=#2196f3, title="Tenkan Sen", linewidth=1, transp=50)
+plot(kijunSen, color=#b71c1c, title="Kijun Sen", linewidth=1, transp=50)
+plot(close, offset = -displacement + 1, color=#FFFFFF, title="Chikou Span", linewidth=1, transp=50)
+
+p1 = plot(senkouSpanA, offset = displacement - 1, color=color.green,
+ title="Senkou Span A", transp=100)
+p2 = plot(senkouSpanB, offset = displacement - 1, color=color.red, 
+ title="Senkou Span B", transp=100, linewidth=2)
+fill(p1, p2, color = senkouSpanA > senkouSpanB ? color.green : color.red, transp=85)
+
+// END Ichimoku
+
 
 // Bearish Engulfing
 C_EngulfingBearishNumberOfCandles = 2
 C_EngulfingBearish_1 = C_BlackBody and C_LongBody and C_WhiteBody[1] and C_SmallBody[1] and close <= open[1] and open >= close[1] and ( close < open[1] or open > close[1] )
 C_EngulfingBearish_2 = ((close[1] > open[1]) and (open > close) and (open >= close[1]) and (open[1] >= close) and ((open - close) > (close[1] - open[1])))
-C_EngulfingBearish = (C_UpTrend and stochrsi_RSITop) and (C_EngulfingBearish_1)
+C_EngulfingBearish = (ichimokuUpTrend and stochrsi_RSITop) and (C_EngulfingBearish_1 or C_EngulfingBearish_2)
 
 alertcondition(C_EngulfingBearish, title = "Engulfing", message = "New Engulfing - Bearish pattern detected.")
 
 if C_EngulfingBearish
     var ttBearishEngulfing = "Engulfing\nAt the end of a given uptrend, a reversal pattern will most likely appear. During the first day, this candlestick pattern uses a small body. It is then followed by a day where the candle body fully overtakes the body from the day before it and closes in the trend’s opposite direction. Although similar to the outside reversal chart pattern, it is not essential for this pattern to fully overtake the range (high to low), rather only the open and the close."
-    label.new(bar_index, patternLabelPosHigh, text="BE", style=label.style_label_down, color = color.red, textcolor=color.white, tooltip = ttBearishEngulfing)
+    label.new(bar_index, patternLabelPosHigh, text="BE", style=label.style_label_down, size = size.tiny, color = color.red, textcolor=color.black, tooltip = ttBearishEngulfing)
 
 
 // Bullish Engulfing
 C_EngulfingBullishNumberOfCandles = 2
 C_EngulfingBullish_1 = C_WhiteBody and C_LongBody and C_BlackBody[1] and C_SmallBody[1] and close >= open[1] and open <= close[1] and ( close > open[1] or open < close[1] )
 C_EngulfingBullish_2 = ((open[1] > close[1]) and (close > open) and (close >= open[1]) and (close[1] >= open) and ((close - open) > (open[1] - close[1])))
-C_EngulfingBullish = (C_DownTrend and stochrsi_RSIBottom) and (C_EngulfingBullish_1)
+C_EngulfingBullish = (ichimokuDownTrend and stochrsi_RSIBottom) and (C_EngulfingBullish_1 or C_EngulfingBullish_2)
 
 alertcondition(C_EngulfingBullish, title = "Engulfing", message = "New Engulfing - Bullish pattern detected.")
 
 if C_EngulfingBullish
     var ttBullishEngulfing = "Engulfing\nAt the end of a given downward trend, there will most likely be a reversal pattern. To distinguish the first day, this candlestick pattern uses a small body, followed by a day where the candle body fully overtakes the body from the day before, and closes in the trend’s opposite direction. Although similar to the outside reversal chart pattern, it is not essential for this pattern to completely overtake the range (high to low), rather only the open and the close."
-    label.new(bar_index, patternLabelPosLow, text="BE", style=label.style_label_up, color = color.blue, textcolor=color.white, tooltip = ttBullishEngulfing)
+    label.new(bar_index, patternLabelPosLow, text="BE", style=label.style_label_up, size = size.tiny, color = color.blue, textcolor=color.white, tooltip = ttBullishEngulfing)
 
 
 // Bullish Hammer
 C_HammerBullishNumberOfCandles = 1
-C_HammerBullish_1 = C_SmallBody and C_Body > 0 and C_BodyLo > hl2 and C_DnShadow >= C_Factor * C_Body and not C_HasUpShadow
+C_HammerBullish_1 = C_SmallBody and C_Body > 0 and C_BodyLo > hl2 and C_DnShadow >= C_Factor * C_Body
 C_HammerBullish_2 = (((high - low) > 3 * (open - close)) and ((close - low) / (0.001 + high - low) > 0.6) and ((open - low) / (0.001 + high - low) > 0.6))
-C_HammerBullish = (C_DownTrend and stochrsi_RSIBottom) and (C_HammerBullish_1)
+C_HammerBullish = (ichimokuDownTrend and stochrsi_RSIBottom) and (C_HammerBullish_1 or C_HammerBullish_2)
 
 alertcondition(C_HammerBullish, title = "Hammer", message = "New Hammer - Bullish pattern detected.")
 
 if C_HammerBullish
     var ttBullishHammer = "Hammer\nHammer candlesticks form when a security moves lower after the open, but continues to rally into close above the intraday low. The candlestick that you are left with will look like a square attached to a long stick-like figure. This candlestick is called a Hammer if it happens to form during a decline."
-    label.new(bar_index, patternLabelPosLow, text="H", style=label.style_label_up, color = color.blue, textcolor=color.white, tooltip = ttBullishHammer)
+    label.new(bar_index, patternLabelPosLow, text="H", style=label.style_label_up, size = size.tiny, color = color.blue, textcolor=color.white, tooltip = ttBullishHammer)
 
 
 // Bearish Hanging Man
 C_HangingManBearishNumberOfCandles = 1
-C_HangingManBearish_1 = C_SmallBody and C_Body > 0 and C_BodyLo > hl2 and C_DnShadow >= C_Factor * C_Body and not C_HasUpShadow
+C_HangingManBearish_1 = C_SmallBody and C_Body > 0 and C_BodyLo > hl2 and C_DnShadow >= C_Factor * C_Body
 C_HangingManBearish_2 = (((high - low) > 4 * (open - close)) and ((close - low) / (0.001 + high - low) >= 0.75) and ((open - low) / (0.001 + high - low) >= 0.75))
-C_HangingManBearish = (C_UpTrend and stochrsi_RSITop) and (C_HangingManBearish_1)
+C_HangingManBearish = (ichimokuUpTrend and stochrsi_RSITop) and (C_HangingManBearish_2)
 
 alertcondition(C_HangingManBearish, title = "Hanging Man", message = "New Hanging Man - Bearish pattern detected.")
 
 if C_HangingManBearish
     var ttBearishHangingMan = "Hanging Man\nWhen a specified security notably moves lower after the open, but continues to rally to close above the intraday low, a Hanging Man candlestick will form. The candlestick will resemble a square, attached to a long stick-like figure. It is referred to as a Hanging Man if the candlestick forms during an advance."
-    label.new(bar_index, patternLabelPosHigh, text="HM", style=label.style_label_down, color = color.red, textcolor=color.white, tooltip = ttBearishHangingMan)
+    label.new(bar_index, patternLabelPosHigh, text="HM", style=label.style_label_down, size = size.tiny, color = color.red, textcolor=color.black, tooltip = ttBearishHangingMan)
 
 
 // Bullish Inverted Hammer
@@ -148,26 +174,26 @@ C_InvertedHammerBullishNumberOfCandles = 1
 C_InvertedHammerBullish_1 = C_SmallBody and C_Body > 0 and C_BodyHi < hl2 and C_UpShadow >= C_Factor * C_Body and not C_HasDnShadow
 // TODO: seems broken
 // C_InvertedHammerBullish_2 = (((high - low) > 3 * (open - close)) and ((high - close) / (0.001 + high - low) > 0.6) and ((high - low) / (0.001 + high - low) > 0.6))
-C_InvertedHammerBullish = (C_DownTrend and stochrsi_RSIBottom) and (C_InvertedHammerBullish_1)
+C_InvertedHammerBullish = (ichimokuDownTrend and stochrsi_RSIBottom) and (C_InvertedHammerBullish_1)
 
 alertcondition(C_InvertedHammerBullish, title = "Inverted Hammer", message = "New Inverted Hammer - Bullish pattern detected.")
 
 if C_InvertedHammerBullish
     var ttBullishInvertedHammer = "Inverted Hammer\nIf in a downtrend, then the open is lower. When it eventually trades higher, but closes near its open, it will look like an inverted version of the Hammer Candlestick. This is a one-day bullish reversal pattern."
-    label.new(bar_index, patternLabelPosLow, text="IH", style=label.style_label_up, color = color.blue, textcolor=color.white, tooltip = ttBullishInvertedHammer)
+    label.new(bar_index, patternLabelPosLow, text="IH", style=label.style_label_up, size = size.tiny, color = color.blue, textcolor=color.white, tooltip = ttBullishInvertedHammer)
 
 
 // Bearish Shooting Star
 C_ShootingStarBearishNumberOfCandles = 1
-C_ShootingStarBearish_1 = C_SmallBody and C_Body > 0 and C_BodyHi < hl2 and C_UpShadow >= C_Factor * C_Body and not C_HasDnShadow
+C_ShootingStarBearish_1 = C_SmallBody and C_Body > 0 and C_BodyHi < hl2 and C_UpShadow >= C_Factor * C_Body
 C_ShootingStarBearish_2 = (((high - low) > 4 * (open - close)) and ((high - close) / (0.001 + high - low) >= 0.75) and ((high - open) / (0.001 + high - low) >= 0.75))
-C_ShootingStarBearish = (C_UpTrend and stochrsi_RSITop) and (C_ShootingStarBearish_1 or C_ShootingStarBearish_1)
+C_ShootingStarBearish = (stochrsi_RSITop) and (C_ShootingStarBearish_2)
 
 alertcondition(C_ShootingStarBearish, title = "Shooting Star", message = "New Shooting Star - Bearish pattern detected.")
 
 if C_ShootingStarBearish
     var ttBearishShootingStar = "Shooting Star\nThis single day pattern can appear during an uptrend and opens high, while it closes near its open. It trades much higher as well. It is bearish in nature, but looks like an Inverted Hammer."
-    label.new(bar_index, patternLabelPosHigh, text="SS", style=label.style_label_down, color = color.red, textcolor=color.white, tooltip = ttBearishShootingStar)
+    label.new(bar_index, patternLabelPosHigh, text="SS", style=label.style_label_down, size = size.tiny, color = color.red, textcolor=color.black, tooltip = ttBearishShootingStar)
 // AbandonedBabyInput = input(title = "Abandoned Baby" ,defval=false) 
 
 // DarkCloudCoverInput = input(title = "Dark Cloud Cover" ,defval=false) 
