@@ -101,17 +101,23 @@ kijunSen = donchian(kijunSenPeriods)
 senkouSpanA = avg(tenkanSen, kijunSen)
 senkouSpanB = donchian(chikouSpanPeriods)
 
+activeSenkouSpanA = input(defval=false, title='Draw Senkou Span A', type=input.bool)
+activeSenkouSpanB = input(defval=false, title='Draw Senkou Span B', type=input.bool)
+activeKijunSen = input(defval=false, title='Draw Kijun Sen', type=input.bool)
+activeTenkanSen = input(defval=false, title='Draw Tenkan Sen', type=input.bool)
+activeChikouSpan = input(defval=false, title='Draw Chikou Span', type=input.bool)
+
 ichimokuUpTrend = (senkouSpanA > senkouSpanB) and (close > close[26])
 ichimokuDownTrend = (senkouSpanA < senkouSpanB) and (close < close[26])
 
-plot(tenkanSen, color=#2196f3, title="Tenkan Sen", linewidth=1, transp=50)
-plot(kijunSen, color=#b71c1c, title="Kijun Sen", linewidth=1, transp=50)
-plot(close, offset = -displacement + 1, color=#FFFFFF, title="Chikou Span", linewidth=1, transp=50)
+plot(tenkanSen, color=#2196f3, title="Tenkan Sen", linewidth=1, transp=activeTenkanSen ? 0 : 100)
+plot(kijunSen, color=#b71c1c, title="Kijun Sen", linewidth=1, transp=activeKijunSen ? 0 : 100)
+plot(close, offset = -displacement + 1, color=#FFFFFF, title="Chikou Span", linewidth=1, transp=activeChikouSpan ? 0 : 100)
 
-p1 = plot(senkouSpanA, offset = displacement - 1, color=color.green,
- title="Senkou Span A", transp=100)
-p2 = plot(senkouSpanB, offset = displacement - 1, color=color.red, 
- title="Senkou Span B", transp=100, linewidth=2)
+p1 = plot(senkouSpanA, offset = displacement -1, color=color.green,
+ title="Senkou Span A", transp=activeSenkouSpanA ? 0 : 100)
+p2 = plot(senkouSpanB, offset = displacement -1 , color=color.red, 
+ title="Senkou Span B", transp=activeSenkouSpanB ? 0 : 100, linewidth=2)
 fill(p1, p2, color = senkouSpanA > senkouSpanB ? color.green : color.red, transp=85)
 
 // END Ichimoku
@@ -160,7 +166,7 @@ if C_HammerBullish
 C_HangingManBearishNumberOfCandles = 1
 C_HangingManBearish_1 = C_SmallBody and C_Body > 0 and C_BodyLo > hl2 and C_DnShadow >= C_Factor * C_Body
 C_HangingManBearish_2 = (((high - low) > 4 * (open - close)) and ((close - low) / (0.001 + high - low) >= 0.75) and ((open - low) / (0.001 + high - low) >= 0.75))
-C_HangingManBearish = (ichimokuUpTrend and stochrsi_RSITop) and (C_HangingManBearish_2)
+C_HangingManBearish = (ichimokuUpTrend and stochrsi_RSITop) and (C_HangingManBearish_1 or C_HangingManBearish_2)
 
 alertcondition(C_HangingManBearish, title = "Hanging Man", message = "New Hanging Man - Bearish pattern detected.")
 
