@@ -3,6 +3,7 @@
 ## https://www.tradingview.com/u/KrustyHack/
 
 * [WIP] Candle Recon Ultimate
+* [WIP] ADX and DI Improved
 
 ## https://fr.tradingview.com/u/LonesomeTheBlue
 
