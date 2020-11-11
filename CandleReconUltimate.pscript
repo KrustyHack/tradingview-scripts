@@ -110,9 +110,18 @@ activeChikouSpan = input(defval=false, title='Draw Chikou Span', type=input.bool
 ichimokuUpTrend = (senkouSpanA > senkouSpanB) and (close > close[26])
 ichimokuDownTrend = (senkouSpanA < senkouSpanB) and (close < close[26])
 
-plot(tenkanSen, color=#2196f3, title="Tenkan Sen", linewidth=1, transp=activeTenkanSen ? 0 : 100)
-plot(kijunSen, color=#b71c1c, title="Kijun Sen", linewidth=1, transp=activeKijunSen ? 0 : 100)
-plot(close, offset = -displacement + 1, color=#FFFFFF, title="Chikou Span", linewidth=1, transp=activeChikouSpan ? 0 : 100)
+crossUpTenkanSenKijunSen = crossover(tenkanSen, kijunSen)
+crossDownTenkanSenKijunSen = crossunder(tenkanSen, kijunSen)
+
+bgcolor(color=crossUpTenkanSenKijunSen ? color.green : na, title="Tenkan Sen cross over Kijun Sen", transp=85)
+bgcolor(color=crossDownTenkanSenKijunSen ? color.red : na, title="Tenkan Sen cross under Kijun Sen", transp=85)
+
+// plot(crossUpTenkanSenKijunSen ? tenkanSen : na, color = color.green , style = plot.style_circles, linewidth = 3)
+// plot(crossDownTenkanSenKijunSen ? tenkanSen : na, color = color.red , style = plot.style_circles, linewidth = 3)
+
+plot(tenkanSen, color=#2196f3, title="Tenkan Sen", linewidth=1, transp=activeTenkanSen ? 50 : 100)
+plot(kijunSen, color=#b71c1c, title="Kijun Sen", linewidth=1, transp=activeKijunSen ? 50 : 100)
+plot(close, offset = -displacement + 1, color=#FFFFFF, title="Chikou Span", linewidth=1, transp=activeChikouSpan ? 50 : 100)
 
 p1 = plot(senkouSpanA, offset = displacement -1, color=color.green,
  title="Senkou Span A", transp=activeSenkouSpanA ? 0 : 100)
