@@ -29,5 +29,5 @@ hline(th, color=color.black, linestyle=hline.style_dashed)
 crossUpDiplusDiminus = crossover(DIPlus, DIMinus)
 crossDownDiplusDiminus = crossunder(DIPlus, DIMinus)
 
-bgcolor(color=crossUpDiplusDiminus ? color.green : na, title="Tenkan Sen cross over Kijun Sen", transp=85, offset=-1)
-bgcolor(color=crossDownDiplusDiminus ? color.red : na, title="Tenkan Sen cross under Kijun Sen", transp=85, offset=-1)
+bgcolor(color=crossUpDiplusDiminus ? color.green : na, title="Tenkan Sen cross over Kijun Sen", transp=90, offset=-1)
+bgcolor(color=crossDownDiplusDiminus ? color.red : na, title="Tenkan Sen cross under Kijun Sen", transp=90, offset=-1)
