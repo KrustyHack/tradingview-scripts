@@ -113,8 +113,8 @@ ichimokuDownTrend = (senkouSpanA < senkouSpanB) and (close < close[26])
 crossUpTenkanSenKijunSen = crossover(tenkanSen, kijunSen)
 crossDownTenkanSenKijunSen = crossunder(tenkanSen, kijunSen)
 
-bgcolor(color=crossUpTenkanSenKijunSen ? color.green : na, title="Tenkan Sen cross over Kijun Sen", transp=85)
-bgcolor(color=crossDownTenkanSenKijunSen ? color.red : na, title="Tenkan Sen cross under Kijun Sen", transp=85)
+bgcolor(color=crossUpTenkanSenKijunSen ? color.green : na, title="Tenkan Sen cross over Kijun Sen", transp=90)
+bgcolor(color=crossDownTenkanSenKijunSen ? color.red : na, title="Tenkan Sen cross under Kijun Sen", transp=90)
 
 // plot(crossUpTenkanSenKijunSen ? tenkanSen : na, color = color.green , style = plot.style_circles, linewidth = 3)
 // plot(crossDownTenkanSenKijunSen ? tenkanSen : na, color = color.red , style = plot.style_circles, linewidth = 3)
