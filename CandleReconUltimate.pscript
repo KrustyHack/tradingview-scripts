@@ -245,7 +245,7 @@ C_MarubozuWhiteBullish_1 = C_WhiteBody and C_LongBody and C_UpShadow <= C_Marubo
 
 C_MarubozuWhiteBullish = C_MarubozuWhiteBullish_1
 
-alertcondition(C_MarubozuWhiteBullish, title = "Marubozu White", message = "New Marubozu White - Bullish pattern detected.")
+alertcondition(C_MarubozuWhiteBullish, title = "Candlesticks - Marubozu White", message = "New Marubozu White - Bullish pattern detected.")
 
 if C_MarubozuWhiteBullish
     var ttBullishMarubozuWhite = "Marubozu White\nA Marubozu White Candle is a candlestick that does not have a shadow that extends from its candle body at either the open or the close. Marubozu is Japanese for “close-cropped” or “close-cut.” Other sources may call it a Bald or Shaven Head Candle."
@@ -259,7 +259,7 @@ C_MarubozuBlackBearish_1 = C_BlackBody and C_LongBody and C_UpShadow <= C_Marubo
 
 C_MarubozuBlackBearish = C_MarubozuBlackBearish_1
 
-alertcondition(C_MarubozuBlackBearish, title = "Marubozu Black", message = "New Marubozu Black - Bearish pattern detected.")
+alertcondition(C_MarubozuBlackBearish, title = "Candlesticks - Marubozu Black", message = "New Marubozu Black - Bearish pattern detected.")
 
 if C_MarubozuBlackBearish
     var ttBearishMarubozuBlack = "Marubozu Black\nThis is a candlestick that has no shadow, which extends from the red-bodied candle at the open, the close, or even at both. In Japanese, the name means “close-cropped” or “close-cut.” The candlestick can also be referred to as Bald or Shaven Head."
@@ -282,7 +282,7 @@ if C_Doji and not C_DragonflyDoji and not C_GravestoneDojiOne
 C_GravestoneDojiBearishNumberOfCandles = 1
 C_GravestoneDojiBearish = C_IsDojiBody and C_DnShadow <= C_Body
 
-alertcondition(C_GravestoneDojiBearish, title = "Gravestone Doji", message = "New Gravestone Doji - Bearish pattern detected.")
+alertcondition(C_GravestoneDojiBearish, title = "Candlesticks - Gravestone Doji", message = "New Gravestone Doji - Bearish pattern detected.")
 
 if C_GravestoneDojiBearish
     var ttBearishGravestoneDoji = "Gravestone Doji\nWhen a doji is at or is close to the day’s low point, a doji line will develop."
@@ -293,7 +293,7 @@ if C_GravestoneDojiBearish
 C_DragonflyDojiBullishNumberOfCandles = 1
 C_DragonflyDojiBullish = C_IsDojiBody and C_UpShadow <= C_Body
 
-alertcondition(C_DragonflyDojiBullish, title = "Dragonfly Doji", message = "New Dragonfly Doji - Bullish pattern detected.")
+alertcondition(C_DragonflyDojiBullish, title = "Candlesticks - Dragonfly Doji", message = "New Dragonfly Doji - Bullish pattern detected.")
 
 if C_DragonflyDojiBullish
     var ttBullishDragonflyDoji = "Dragonfly Doji\nSimilar to other Doji days, this particular Doji also regularly appears at pivotal market moments. This is a specific Doji where both the open and close price are at the high of a given day."
