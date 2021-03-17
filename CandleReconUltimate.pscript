@@ -22,6 +22,8 @@ mino10 = lowest(open, 10)
 // Highest open price over 10 past periods
 maxo10 = highest(open, 10)
 
+var displayCandlesNames = input(defval=true, title="Display candles names", type=input.bool)
+
 C_DownTrend = true
 C_UpTrend = true
 var trendRule1 = "SMA50"
@@ -167,7 +169,7 @@ C_EngulfingBearish = (ichimokuUpTrend and stochrsi_RSITop) and (C_EngulfingBeari
 
 alertcondition(C_EngulfingBearish, title = "Candlesticks - Engulfing", message = "New Engulfing - Bearish pattern detected.")
 
-if C_EngulfingBearish
+if C_EngulfingBearish and displayCandlesNames
     var ttBearishEngulfing = "Engulfing\nAt the end of a given uptrend, a reversal pattern will most likely appear. During the first day, this candlestick pattern uses a small body. It is then followed by a day where the candle body fully overtakes the body from the day before it and closes in the trend’s opposite direction. Although similar to the outside reversal chart pattern, it is not essential for this pattern to fully overtake the range (high to low), rather only the open and the close."
     label.new(bar_index, patternLabelPosHigh, text="BE", style=label.style_label_down, size = size.tiny, color = color.red, textcolor=color.black, tooltip = ttBearishEngulfing)
 
@@ -180,7 +182,7 @@ C_EngulfingBullish = (ichimokuDownTrend and stochrsi_RSIBottom) and (C_Engulfing
 
 alertcondition(C_EngulfingBullish, title = "Candlesticks - Engulfing", message = "New Engulfing - Bullish pattern detected.")
 
-if C_EngulfingBullish
+if C_EngulfingBullish and displayCandlesNames
     var ttBullishEngulfing = "Engulfing\nAt the end of a given downward trend, there will most likely be a reversal pattern. To distinguish the first day, this candlestick pattern uses a small body, followed by a day where the candle body fully overtakes the body from the day before, and closes in the trend’s opposite direction. Although similar to the outside reversal chart pattern, it is not essential for this pattern to completely overtake the range (high to low), rather only the open and the close."
     label.new(bar_index, patternLabelPosLow, text="BE", style=label.style_label_up, size = size.tiny, color = color.blue, textcolor=color.white, tooltip = ttBullishEngulfing)
 
@@ -193,7 +195,7 @@ C_HammerBullish = (ichimokuDownTrend and stochrsi_RSIBottom) and (C_HammerBullis
 
 alertcondition(C_HammerBullish, title = "Candlesticks - Hammer", message = "New Hammer - Bullish pattern detected.")
 
-if C_HammerBullish
+if C_HammerBullish and displayCandlesNames
     var ttBullishHammer = "Hammer\nHammer candlesticks form when a security moves lower after the open, but continues to rally into close above the intraday low. The candlestick that you are left with will look like a square attached to a long stick-like figure. This candlestick is called a Hammer if it happens to form during a decline."
     label.new(bar_index, patternLabelPosLow, text="H", style=label.style_label_up, size = size.tiny, color = color.blue, textcolor=color.white, tooltip = ttBullishHammer)
 
@@ -206,7 +208,7 @@ C_HangingManBearish = (ichimokuUpTrend and stochrsi_RSITop) and (C_HangingManBea
 
 alertcondition(C_HangingManBearish, title = "Candlesticks - Hanging Man", message = "New Hanging Man - Bearish pattern detected.")
 
-if C_HangingManBearish
+if C_HangingManBearish and displayCandlesNames
     var ttBearishHangingMan = "Hanging Man\nWhen a specified security notably moves lower after the open, but continues to rally to close above the intraday low, a Hanging Man candlestick will form. The candlestick will resemble a square, attached to a long stick-like figure. It is referred to as a Hanging Man if the candlestick forms during an advance."
     label.new(bar_index, patternLabelPosHigh, text="HM", style=label.style_label_down, size = size.tiny, color = color.red, textcolor=color.black, tooltip = ttBearishHangingMan)
 
@@ -220,7 +222,7 @@ C_InvertedHammerBullish = (ichimokuDownTrend and stochrsi_RSIBottom) and (C_Inve
 
 alertcondition(C_InvertedHammerBullish, title = "Candlesticks - Inverted Hammer", message = "New Inverted Hammer - Bullish pattern detected.")
 
-if C_InvertedHammerBullish
+if C_InvertedHammerBullish and displayCandlesNames
     var ttBullishInvertedHammer = "Inverted Hammer\nIf in a downtrend, then the open is lower. When it eventually trades higher, but closes near its open, it will look like an inverted version of the Hammer Candlestick. This is a one-day bullish reversal pattern."
     label.new(bar_index, patternLabelPosLow, text="IH", style=label.style_label_up, size = size.tiny, color = color.blue, textcolor=color.white, tooltip = ttBullishInvertedHammer)
 
@@ -233,7 +235,7 @@ C_ShootingStarBearish = (ichimokuUpTrend and stochrsi_RSITop) and (C_ShootingSta
 
 alertcondition(C_ShootingStarBearish, title = "Candlesticks - Shooting Star", message = "New Shooting Star - Bearish pattern detected.")
 
-if C_ShootingStarBearish
+if C_ShootingStarBearish and displayCandlesNames
     var ttBearishShootingStar = "Shooting Star\nThis single day pattern can appear during an uptrend and opens high, while it closes near its open. It trades much higher as well. It is bearish in nature, but looks like an Inverted Hammer."
     label.new(bar_index, patternLabelPosHigh, text="SS", style=label.style_label_down, size = size.tiny, color = color.red, textcolor=color.black, tooltip = ttBearishShootingStar)
 
@@ -247,7 +249,7 @@ C_MarubozuWhiteBullish = C_MarubozuWhiteBullish_1
 
 alertcondition(C_MarubozuWhiteBullish, title = "Candlesticks - Marubozu White", message = "New Marubozu White - Bullish pattern detected.")
 
-if C_MarubozuWhiteBullish
+if C_MarubozuWhiteBullish and displayCandlesNames
     var ttBullishMarubozuWhite = "Marubozu White\nA Marubozu White Candle is a candlestick that does not have a shadow that extends from its candle body at either the open or the close. Marubozu is Japanese for “close-cropped” or “close-cut.” Other sources may call it a Bald or Shaven Head Candle."
     label.new(bar_index, patternLabelPosLow, text="MW", style=label.style_label_up, size = size.tiny, color = color.blue, textcolor=color.white, tooltip = ttBullishMarubozuWhite)
 
@@ -261,7 +263,7 @@ C_MarubozuBlackBearish = C_MarubozuBlackBearish_1
 
 alertcondition(C_MarubozuBlackBearish, title = "Candlesticks - Marubozu Black", message = "New Marubozu Black - Bearish pattern detected.")
 
-if C_MarubozuBlackBearish
+if C_MarubozuBlackBearish and displayCandlesNames
     var ttBearishMarubozuBlack = "Marubozu Black\nThis is a candlestick that has no shadow, which extends from the red-bodied candle at the open, the close, or even at both. In Japanese, the name means “close-cropped” or “close-cut.” The candlestick can also be referred to as Bald or Shaven Head."
     label.new(bar_index, patternLabelPosHigh, text="MB", style=label.style_label_down, size = size.tiny, color = color.red, textcolor=color.white, tooltip = ttBearishMarubozuBlack)
 
@@ -273,7 +275,7 @@ C_GravestoneDojiOne = C_IsDojiBody and C_DnShadow <= C_Body
 
 alertcondition(C_Doji and not C_DragonflyDoji and not C_GravestoneDojiOne, title = "Candlesticks - Doji", message = "New Doji pattern detected.")
 
-if C_Doji and not C_DragonflyDoji and not C_GravestoneDojiOne
+if C_Doji and not C_DragonflyDoji and not C_GravestoneDojiOne and displayCandlesNames
     var ttDoji = "Doji\nWhen the open and close of a security are essentially equal to each other, a doji candle forms. The length of both upper and lower shadows may vary, causing the candlestick you are left with to either resemble a cross, an inverted cross, or a plus sign. Doji candles show the playout of buyer-seller indecision in a tug-of-war of sorts. As price moves either above or below the opening level during the session, the close is either at or near the opening level."
     label.new(bar_index, patternLabelPosLow, text="D", style=label.style_label_up, size = size.tiny, color = color.gray, textcolor=color.white, tooltip = ttDoji)
 
@@ -284,7 +286,7 @@ C_GravestoneDojiBearish = C_IsDojiBody and C_DnShadow <= C_Body
 
 alertcondition(C_GravestoneDojiBearish, title = "Candlesticks - Gravestone Doji", message = "New Gravestone Doji - Bearish pattern detected.")
 
-if C_GravestoneDojiBearish
+if C_GravestoneDojiBearish and displayCandlesNames
     var ttBearishGravestoneDoji = "Gravestone Doji\nWhen a doji is at or is close to the day’s low point, a doji line will develop."
     label.new(bar_index, patternLabelPosHigh, text="GD", style=label.style_label_down, size = size.tiny, color = color.red, textcolor=color.white, tooltip = ttBearishGravestoneDoji)
 
@@ -295,7 +297,7 @@ C_DragonflyDojiBullish = C_IsDojiBody and C_UpShadow <= C_Body
 
 alertcondition(C_DragonflyDojiBullish, title = "Candlesticks - Dragonfly Doji", message = "New Dragonfly Doji - Bullish pattern detected.")
 
-if C_DragonflyDojiBullish
+if C_DragonflyDojiBullish and displayCandlesNames
     var ttBullishDragonflyDoji = "Dragonfly Doji\nSimilar to other Doji days, this particular Doji also regularly appears at pivotal market moments. This is a specific Doji where both the open and close price are at the high of a given day."
     label.new(bar_index, patternLabelPosLow, text="DD", style=label.style_label_up, size = size.tiny, color = color.blue, textcolor=color.white, tooltip = ttBullishDragonflyDoji)
 
