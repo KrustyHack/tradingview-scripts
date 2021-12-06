@@ -1,0 +1,17 @@
+// This source code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
+// © KrustyHack
+
+//@version=4
+study(title="Ichimoku Twist Only", shorttitle="Ichimoku Twist Only", overlay=true)
+conversionPeriods = input(9, minval=1, title="Conversion Line Length")
+basePeriods = input(26, minval=1, title="Base Line Length")
+laggingSpan2Periods = input(52, minval=1, title="Lagging Span 2 Length")
+displacement = input(26, minval=1, title="Displacement")
+donchian(len) => avg(lowest(len), highest(len))
+conversionLine = donchian(conversionPeriods)
+baseLine = donchian(basePeriods)
+leadLine1 = avg(conversionLine, baseLine)
+leadLine2 = donchian(laggingSpan2Periods)
+
+plotshape(cross(leadLine1, leadLine2) ? leadLine1 : na, style=shape.diamond, offset = displacement - 1, size = size.tiny, location = location.absolute)
+//bgcolor(color=cross(leadLine1, leadLine2) ? color.yellow : na, transp = 90, offset = displacement - 1)
