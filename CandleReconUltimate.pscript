@@ -28,7 +28,7 @@ C_DownTrend = true
 C_UpTrend = true
 var trendRule1 = "SMA50"
 var trendRule2 = "SMA50, SMA200"
-var trendRule = input(trendRule1, "Detect Trend Based On", options=[trendRule1, trendRule2, "No detection"])
+var trendRule = input(trendRule2, "Detect Trend Based On", options=[trendRule1, trendRule2, "No detection"])
 
 if trendRule == trendRule1
 	priceAvg = sma(close, 50)
@@ -123,13 +123,13 @@ crossDownTenkanSenKijunSen = crossunder(tenkanSen, kijunSen)
 // plot(crossDownTenkanSenKijunSen ? tenkanSen : na, color = color.red , style = plot.style_circles, linewidth = 3)
 
 plot(tenkanSen, color=#2196f3, title="Tenkan Sen", linewidth=1, transp=activeTenkanSen ? 30 : 100)
-plot(kijunSen, color=#b71c1c, title="Kijun Sen", linewidth=2, transp=activeKijunSen ? 0 : 100)
+plot(kijunSen, color=#b71c1c, title="Kijun Sen", linewidth=1, transp=activeKijunSen ? 0 : 100)
 plot(close, offset = -displacement + 1, color=#FFFFFF, title="Chikou Span", linewidth=1, transp=activeChikouSpan ? 30 : 100)
 
 p1 = plot(senkouSpanA, offset = displacement -1, color=color.green,
  title="Senkou Span A", transp=activeSenkouSpanA ? 0 : 100)
 p2 = plot(senkouSpanB, offset = displacement -1 , color=color.red, 
- title="Senkou Span B", transp=activeSenkouSpanB ? 0 : 100, linewidth=2)
+ title="Senkou Span B", transp=activeSenkouSpanB ? 0 : 100, linewidth=1)
 fill(p1, p2, color = senkouSpanA > senkouSpanB ? color.green : color.red, transp=activeKumoSpan ? 85 : 100)
 
 // ALERTING
